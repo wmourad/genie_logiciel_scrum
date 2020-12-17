@@ -21,7 +21,8 @@ def getDirConvert():
 def convertAll(pdfDir,convertionDir):
     l = os.listdir(pdfDir)
     for pdf in l:
-        os.system("pdftotext -enc UTF-8 -y 60 -H 650 -W 1000 -nopgbrk -layout -raw -eol unix " +os.path.join(pdfDir, pdf)+" "+os.path.join(convertionDir, os.path.splitext(pdf)[0]+".txt"))
+        if pdf.endswith('.pdf'):
+            os.system("pdftotext -enc UTF-8 -y 60 -H 640 -W 1000 -nopgbrk -layout -raw -eol unix '" +os.path.join(pdfDir, pdf)+"' '"+os.path.join(convertionDir, os.path.splitext(pdf)[0]+".txt'"))
         
 
 def parseText(parsedDir,convertionDir):
@@ -29,11 +30,14 @@ def parseText(parsedDir,convertionDir):
     for fichier in l:
         with open(os.path.join(parsedDir,fichier),"w") as f:
             data = getData(fichier,convertionDir)
-            f.write("file name      : "+getFileName(fichier)+"\n")
-            f.write("document title : "+getTitle(data))
+            f.write("file name      : "+getFileName(fichier))
+            f.write("\ndocument title : "+getTitle(data))
+            f.write("\nauteur         : "+getAuthor(data))
             #f.write("auteur       : "+getName(data)+"\n")
-            f.write("abstract       : "+getAbstract(data))
-            getName(data)
+            f.write("\nabstract       : "+getAbstract(data))
+            f.write("\nbiblio         : "+getBiblio(data))
+            #getName(data)
+
 
 def parseXml(parsedDir,convertionDir):
     l=os.listdir(parsedDir)
@@ -55,6 +59,7 @@ def parseXml(parsedDir,convertionDir):
             abstract.text = getAbstract(data)
             
             biblio = ET.SubElement(root,'biblio')
+            biblio.text=getBiblio(data)
 
             et = ET.ElementTree(root)
             tmp= BytesIO()
@@ -75,7 +80,8 @@ def getFileName(pdf):
 
 #get title of the document
 def getTitle(data):
-    return data[0]
+    text= data[0]+data[1]
+    return re.sub('\n'," ",text)
 
 
 #get authors of the paper
@@ -100,7 +106,7 @@ def getName(data):
 
 #get abstract of the paper
 def getAbstract(data):
-    pattern = re.compile(r'([Aa]bstract|ABSTRACT)\.?\-?\s?(.*?)1.?\s?(Introduction|INTRODUCTION)?')
+    pattern = re.compile(r'([Aa]\s?b\s?s\s?t\s?r\s?a\s?c\s?t|A\s?B\s?S\s?T\s?R\s?A\s?C\s?T)\.?\-?\s?(.*?)1\.?-?\s?(I\s?n\s?t\s?r\s?o\s?d\s?u\s?c\s?t\s?i\s?o\s?n|I\s?N\s?T\s?R\s?O\s?D\s?U\s?C\s?T\s?I\s?O\s?N)?') #[1|I.]\
     text=""
     for line in data:
         text = text+re.sub('\n'," ",line)
@@ -110,9 +116,34 @@ def getAbstract(data):
     if  text2 != None:
         if text2.group(1) != None:
             return text2.group(2)
-    else:
-        return "pas d'abstract trouver"
-    #exit(1)        
+    return "pas d'abstract trouver"
+
+
+def getAuthor(data):
+    text=""
+    i=2
+    while i<=15 :
+        text=text+data[i]
+        i+=1
+    return re.sub('\n'," ",text)
+
+#get biblio of the paper
+def getBiblio(data):
+    #pattern = re.compile(r'([Rr]eferences?|REFERENCES?)(.*)')
+    text=""
+    for line in data:
+        text = text+re.sub('\n'," ",line)
+    
+    text=text.lower()
+
+    textS=text.rsplit("references",1)
+    if len(textS)== 2:
+        return textS[1]
+    return "pas de bilio trouver"
+
+    
+    
+
 
 def dirParse(command,convertionDir):
     #create directory où pn vas parser
