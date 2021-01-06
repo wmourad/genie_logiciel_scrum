@@ -31,12 +31,20 @@ def parseText(parsedDir,convertionDir):
         with open(os.path.join(parsedDir,fichier),"w") as f:
             data = getData(fichier,convertionDir)
             f.write("file name      : "+getFileName(fichier))
+            
             f.write("\ndocument title : "+getTitle(data))
+            
             f.write("\nauteur         : "+getAuthor(data))
-            #f.write("auteur       : "+getName(data)+"\n")
+            
             f.write("\nabstract       : "+getAbstract(data))
+            
+            f.write("\nintroduction   : "+getIntro(data))
+
+            f.write("\ncorps   : "+getCorps(data))
+            
             f.write("\nbiblio         : "+getBiblio(data))
-            #getName(data)
+            
+            
 
 
 def parseXml(parsedDir,convertionDir):
@@ -57,6 +65,9 @@ def parseXml(parsedDir,convertionDir):
 
             abstract = ET.SubElement(root,'abstract')
             abstract.text = getAbstract(data)
+
+            introduction = ET.SubElement(root,'introduction')
+            introduction.text = getIntro(data)
             
             biblio = ET.SubElement(root,'biblio')
             biblio.text=getBiblio(data)
@@ -87,7 +98,6 @@ def getTitle(data):
 #get authors of the paper
 def getName(data):
     pattern = re.compile(r'[A-Z][a-zA-Z]+[\s-][A-Z][a-zA-Z]+\s[A-Z][a-zA-Z]+[\s-][A-Z][a-zA-Z]+')
-    #pattern2= re.compile(r'^(?=.*\b[A-Z][a-zA-Z]+)')
     text=""
     cpt=0
     for line in data:
@@ -141,7 +151,49 @@ def getBiblio(data):
         return textS[1]
     return "pas de bilio trouver"
 
-    
+def getIntro(data):
+    text=""
+    pattern = re.compile(r'^1?\.?\s?(introduction)\s?:?',re.IGNORECASE)
+    patternBis= re.compile(r'^2\.?\s[A-Z]')    
+    stop=False 
+    for line in data:
+        if re.match(pattern,line) :
+            stop=True
+        elif re.match(patternBis,line):
+            if " ." not in line:
+                return text    
+        elif stop:
+            text = text+re.sub('\n'," ",line)           
+    return "pas d'introduction"    
+
+
+
+def getCorps(data):
+    text=""
+    pattern = re.compile(r'(^(II|2)\.?\s)[A-Z].*')
+    patternBis = re.compile(r'^[A-Z]?\d{0,2}\.?\d?\s?(Conclusions?|results?|Discussion?|summary):?\s?(\b\s)*$',re.IGNORECASE)  
+    stop=False 
+    for line in data:
+        if re.match(pattern,line) :
+            text = text+re.sub('\n'," ",line)
+            stop=True
+        elif re.match(patternBis,line):
+            if " ." not in line:
+                return text    
+        elif stop:
+            text = text+re.sub('\n'," ",line)           
+    return "pas de corps"    
+
+
+def getConclusion(data):
+    return null
+
+def getDisc(data):
+    return null
+
+
+
+
     
 
 
@@ -208,3 +260,9 @@ def main():
 # lance le programme
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
