@@ -318,9 +318,9 @@ def menu(pdfDir):
             print(v)
             
     print("\n########################################\n")
-
+    
     listChoice = input("choose list of pdf to parse (1,2,3,...) :")
-    listParse=set(list(map(int,listChoice.split(","))))
+    listParse=list(set(list(map(int,listChoice.split(",")))))
     return listParse
 
 # lance le programme
