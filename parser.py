@@ -30,7 +30,7 @@ def parseText(parsedDir,convertionDir):
     for fichier in l:
         with open(os.path.join(parsedDir,fichier),"w") as f:
             data = getData(fichier,convertionDir)
-            f.write("file name      : "+getFileName(fichier))
+            f.write("file name        : "+getFileName(fichier))
             
             f.write("\ndocument title : "+getTitle(data))
             
@@ -40,7 +40,11 @@ def parseText(parsedDir,convertionDir):
             
             f.write("\nintroduction   : "+getIntro(data))
 
-            f.write("\ncorps   : "+getCorps(data))
+            f.write("\ncorps          : "+getCorps(data))
+
+            f.write("\nconclusion    : "+getConclusion(data))
+            
+            f.write("\ndiscussion    : "+getDisc(data))
             
             f.write("\nbiblio         : "+getBiblio(data))
             
@@ -68,6 +72,15 @@ def parseXml(parsedDir,convertionDir):
 
             introduction = ET.SubElement(root,'introduction')
             introduction.text = getIntro(data)
+
+            corps = ET.SubElement(root,'corps')
+            corps.text = getCorps(data)
+
+            conclusion = ET.SubElement(root,'conclusion')
+            conclusion.text = getConclusion(data)
+
+            discussion = ET.SubElement(root,'discussion')
+            diiscussion.text = getDisc(data)
             
             biblio = ET.SubElement(root,'biblio')
             biblio.text=getBiblio(data)
@@ -186,10 +199,35 @@ def getCorps(data):
 
 
 def getConclusion(data):
-    return null
+    text=""
+    pattern = re.compile(r'^[A-Z]?\d{0,2}\.?\d?\s?(Conclusions?|results?|Discussion?|summary):?\s?(\b\s)*$',re.IGNORECASE)  
+    patternBis= re.compile(r'(references?)',re.I)
+    stop=False 
+    for line in data:
+        if re.match(pattern,line) :
+            stop=True
+        elif re.match(patternBis,line):
+            if " ." not in line:
+                return text    
+        elif stop:
+            text = text+re.sub('\n'," ",line)           
+    return "pas de Conclusion"  
+
 
 def getDisc(data):
-    return null
+    text=""
+    pattern = re.compile(r'^[A-Z]{0,2}\d{0,2}\.?\d?\s?(DISCUSSIONS?):?\s?(\d\s)*$',re.I)  
+    patternBis= re.compile(r'(references?|acknoledgments?)',re.I)
+    stop=False 
+    for line in data:
+        if re.match(pattern,line) :
+            stop=True
+        elif re.match(patternBis,line):
+            if " ." not in line:
+                return text    
+        elif stop:
+            text = text+re.sub('\n'," ",line)           
+    return "pas de discussion"
 
 
 
@@ -256,6 +294,23 @@ def main():
     elif command == "xml" :
         parseXml(parsedDir,convertionDir)
 
+
+def menu(pdfDir):
+    os.system('clear')
+    print("############################")
+    print("#########  MENU  ###########")
+    print("############################")
+
+    i=1
+    l = os.listdir(pdfDir)
+    for pdf in l:
+        if pdf.endswith('.pdf'):
+            v=str(i)+"-"+pdf
+            print(v)
+            i=i+1
+    print("\n############################\n")
+
+    listChoice = input()
 
 # lance le programme
 if __name__ == '__main__':
