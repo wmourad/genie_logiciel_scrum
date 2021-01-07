@@ -19,10 +19,18 @@ def getDirConvert():
 
 # convertie tout les pdf existant dans un dossier dans un nouveau dossier
 def convertAll(pdfDir,convertionDir):
+    pdfList=menu(pdfDir)
     l = os.listdir(pdfDir)
-    for pdf in l:
-        if pdf.endswith('.pdf'):
-            os.system("pdftotext -enc UTF-8 -y 60 -H 640 -W 1000 -nopgbrk -layout -raw -eol unix '" +os.path.join(pdfDir, pdf)+"' '"+os.path.join(convertionDir, os.path.splitext(pdf)[0]+".txt'"))
+    if len(pdfList)==1 and pdfList[0]==0:
+        print("everything is parsed")
+        for pdf in l:
+            if pdf.endswith('.pdf'):
+                os.system("pdftotext -enc UTF-8 -y 60 -H 640 -W 1000 -nopgbrk -layout -raw -eol unix '" +os.path.join(pdfDir, pdf)+"' '"+os.path.join(convertionDir, os.path.splitext(pdf)[0]+".txt'"))
+    else:
+        for num in pdfList:
+            if l[num-1].endswith('.pdf'):
+                os.system("pdftotext -enc UTF-8 -y 60 -H 640 -W 1000 -nopgbrk -layout -raw -eol unix '" +os.path.join(pdfDir, l[num-1])+"' '"+os.path.join(convertionDir, os.path.splitext(l[num-1])[0]+".txt'"))
+                print("-"+l[num-1]+" |  is parsed successfully")
         
 
 def parseText(parsedDir,convertionDir):
@@ -301,16 +309,19 @@ def menu(pdfDir):
     print("#########  MENU  ###########")
     print("############################")
 
-    i=1
+    i=0
     l = os.listdir(pdfDir)
     for pdf in l:
         if pdf.endswith('.pdf'):
+            i=i+1
             v=str(i)+"-"+pdf
             print(v)
-            i=i+1
-    print("\n############################\n")
+            
+    print("\n########################################\n")
 
-    listChoice = input()
+    listChoice = input("choose list of pdf to parse (1,2,3,...) :")
+    listParse=set(list(map(int,listChoice.split(","))))
+    return listParse
 
 # lance le programme
 if __name__ == '__main__':
